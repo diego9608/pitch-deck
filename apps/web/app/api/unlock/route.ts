@@ -17,6 +17,7 @@ export async function POST(req: Request) {
 
   if (!ok) return NextResponse.json({ ok:false }, { status: 401 });
 
-  cookies().set("deck_session","1",{ httpOnly:true, secure:true, sameSite:"lax", path:"/", maxAge:60*60*24 });
+  const cookieStore = await cookies();
+  cookieStore.set("deck_session","1",{ httpOnly:true, secure:true, sameSite:"lax", path:"/", maxAge:60*60*24 });
   return NextResponse.json({ ok:true });
 }

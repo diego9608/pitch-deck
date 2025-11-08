@@ -1,5 +1,4 @@
 import { PrismaClient } from '@prisma/client';
-import { baseDeckTemplate } from '@pd/templates';
 
 const prisma = new PrismaClient();
 
@@ -43,14 +42,14 @@ async function main() {
 
   console.log('✅ Created project:', project.slug);
 
-  // Create deck
+  // Create deck with basic slides
   const deck = await prisma.deck.upsert({
     where: { id: 'default-deck-id' },
     update: {},
     create: {
       id: 'default-deck-id',
       projectId: project.id,
-      title: baseDeckTemplate.name,
+      title: 'Agua Maquila Pitch Deck',
       status: 'PUBLISHED',
       visibility: 'INVITE_ONLY',
     },
@@ -58,8 +57,14 @@ async function main() {
 
   console.log('✅ Created deck:', deck.title);
 
-  // Create slides
-  for (const slide of baseDeckTemplate.slides) {
+  // Create basic slides
+  const basicSlides = [
+    { index: 0, title: 'Intro', content: '# Welcome to Agua Maquila\n\nWater bottling maquila opportunity' },
+    { index: 1, title: 'Problem', content: '# The Problem\n\nDescribe the problem here' },
+    { index: 2, title: 'Solution', content: '# Our Solution\n\nDescribe the solution here' },
+  ];
+
+  for (const slide of basicSlides) {
     await prisma.slide.upsert({
       where: {
         deckId_index: {
@@ -77,7 +82,7 @@ async function main() {
     });
   }
 
-  console.log('✅ Created slides:', baseDeckTemplate.slides.length);
+  console.log('✅ Created slides:', basicSlides.length);
 
   // Create invite with gate
   const invite = await prisma.invite.upsert({
@@ -92,7 +97,6 @@ async function main() {
   });
 
   console.log('✅ Created invite:', invite.code);
-
   console.log('🎉 Seed completed successfully!');
 }
 
