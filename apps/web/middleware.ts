@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
-import { verifySession } from '@pd/auth';
+import { verifySession } from '@pd/auth/src/edge';
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -20,18 +20,18 @@ export function middleware(request: NextRequest) {
       return NextResponse.redirect(new URL('/invite/demo', request.url));
     }
 
-    // Verify session signature and expiration
-    const sessionData = verifySession(sessionCookie, cookieSecret);
+    // Verify session signature and expiration (using Edge-compatible crypto)
+    return verifySession(sessionCookie, cookieSecret).then((sessionData) => {
+      if (!sessionData) {
+        // Session invalid or expired - redirect to invite
+        const response = NextResponse.redirect(new URL('/invite/demo', request.url));
+        response.cookies.delete('deck_session');
+        return response;
+      }
 
-    if (!sessionData) {
-      // Session invalid or expired - redirect to invite
-      const response = NextResponse.redirect(new URL('/invite/demo', request.url));
-      response.cookies.delete('deck_session');
-      return response;
-    }
-
-    // Session valid - allow access
-    return NextResponse.next();
+      // Session valid - allow access
+      return NextResponse.next();
+    });
   }
 
   // Product routes (future: require user auth)

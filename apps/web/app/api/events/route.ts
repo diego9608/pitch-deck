@@ -3,6 +3,9 @@ import { PrismaClient } from '@prisma/client';
 import { EventSchema } from '@pd/schemas';
 import { verifySession } from '@pd/auth';
 
+// Force Node.js runtime for crypto and Prisma
+export const runtime = 'nodejs';
+
 const prisma = new PrismaClient();
 
 export async function POST(request: NextRequest) {

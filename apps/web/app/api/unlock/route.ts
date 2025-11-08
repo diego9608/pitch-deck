@@ -4,6 +4,9 @@ import { UnlockRequestSchema } from '@pd/schemas';
 import { constantTimeEquals, sha256, signSession, hashEmail } from '@pd/auth';
 import { getNDAHash } from '@pd/legal';
 
+// Force Node.js runtime for crypto and Prisma
+export const runtime = 'nodejs';
+
 const prisma = new PrismaClient();
 
 export async function POST(request: NextRequest) {
