@@ -1,12 +1,11 @@
 # Netlify configuration for pitch-deck platform
 
 [build]
-  command = "cd apps/web && pnpm build"
+  command = "npm install -g pnpm@10.18.3 && pnpm install && pnpm build"
   publish = "apps/web/.next"
 
 [build.environment]
   NODE_VERSION = "18"
-  NPM_FLAGS = "--legacy-peer-deps"
 
 # Redirects for Next.js
 [[redirects]]

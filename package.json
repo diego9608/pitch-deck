@@ -6,7 +6,7 @@
   "packageManager": "pnpm@10.18.3",
   "scripts": {
     "dev": "turbo run dev",
-    "build": "turbo run build",
+    "build": "cd apps/web && npm run build",
     "lint": "turbo run lint",
     "test": "turbo run test",
     "format": "prettier --write \"**/*.{ts,tsx,md,json}\"",
