@@ -10,6 +10,18 @@
 # Next.js plugin handles routing automatically
 [[plugins]]
   package = "@netlify/plugin-nextjs"
+  [plugins.inputs]
+    packagePath = "apps/web"
+
+# Function bundling configuration for pnpm monorepo
+[functions]
+  node_bundler = "nft"
+  external_node_modules = ["next", "react", "react-dom"]
+  included_files = [
+    "apps/web/.next/**",
+    "apps/web/package.json",
+    "apps/web/node_modules/next/**"
+  ]
 
 # Headers for security
 [[headers]]
