@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { DeckViewer, EndDeckModal } from '@pd/ui';
 import { trackEvent } from '@pd/analytics';
@@ -22,7 +22,7 @@ interface Deck {
     index: number;
     title: string;
     content: string;
-    assets: any;
+    assets: unknown;
     createdAt: Date;
     updatedAt: Date;
   }>;

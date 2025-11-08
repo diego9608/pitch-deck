@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, Prisma } from '@prisma/client';
 import { EventSchema } from '@pd/schemas';
 import { verifySession } from '@pd/auth';
 
@@ -36,7 +36,7 @@ export async function POST(request: NextRequest) {
     await prisma.event.create({
       data: {
         name,
-        payload: payload || {},
+        payload: (payload || {}) as Prisma.InputJsonValue,
         sessionId: sessionData?.sessionId || null,
         deckId: sessionData?.deckId || null,
       },

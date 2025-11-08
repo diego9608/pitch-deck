@@ -6,13 +6,13 @@
   "packageManager": "pnpm@9.12.3",
   "scripts": {
     "dev": "turbo run dev",
-    "prebuild": "cd apps/web && prisma generate",
-    "build": "cd apps/web && next build",
+    "prebuild": "pnpm --filter web db:generate",
+    "build": "pnpm --filter web build",
     "lint": "turbo run lint",
     "test": "turbo run test",
     "format": "prettier --write \"**/*.{ts,tsx,md,json}\"",
-    "db:push": "cd apps/web && pnpm db:push",
-    "seed": "cd apps/web && pnpm seed"
+    "db:push": "pnpm --filter web db:push",
+    "seed": "pnpm --filter web seed"
   },
   "dependencies": {
     "@prisma/client": "^5.8.1"
