@@ -10,8 +10,6 @@
 # Next.js plugin handles routing automatically
 [[plugins]]
   package = "@netlify/plugin-nextjs"
-  [plugins.inputs]
-    packagePath = "apps/web"
 
 # Function bundling configuration for pnpm monorepo
 [functions]
