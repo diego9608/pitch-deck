@@ -2,15 +2,9 @@
 
 ## Current Issue
 
-**Error:** Vercel is using Node v22.21.1 + pnpm 6.35.1 instead of Node 18.x + pnpm 9.12.3
+**Error:** Vercel may be using default Node.js and pnpm versions instead of the pinned versions
 
-**Symptoms:**
-```
-WARN  Ignoring not compatible lockfile
-ERR_PNPM_META_FETCH_FAIL  Value of "this" must be of type URLSearchParams
-```
-
-**Root Cause:** Vercel project settings need to be configured to use the correct versions.
+**Root Cause:** Vercel project settings need to be configured to use Node 22.x + pnpm 10.18.3
 
 ---
 
@@ -18,10 +12,10 @@ ERR_PNPM_META_FETCH_FAIL  Value of "this" must be of type URLSearchParams
 
 These are already committed and pushed:
 
-- ✅ `.nvmrc` created with `18`
-- ✅ `package.json` has `"packageManager": "pnpm@9.12.3"`
-- ✅ `package.json` has `"engines": { "node": "18.x" }`
-- ✅ `pnpm-lock.yaml` generated with pnpm@9.12.3
+- ✅ `.nvmrc` created with `22`
+- ✅ `package.json` has `"packageManager": "pnpm@10.18.3"`
+- ✅ `package.json` has `"engines": { "node": "22.x" }`
+- ✅ `pnpm-lock.yaml` generated with Node 22 + pnpm@10.18.3
 - ✅ Build scripts use `pnpm --filter web`
 - ✅ All investor flow pages implemented
 - ✅ Root redirects to `/invite/demo`
@@ -57,11 +51,11 @@ You MUST configure these in the Vercel Dashboard - they cannot be set in code:
 4. Click **Override** toggle to enable it
 5. Enter this exact command:
    ```
-   corepack enable && corepack prepare pnpm@9.12.3 --activate && pnpm install
+   corepack enable && corepack prepare pnpm@10.18.3 --activate && pnpm install
    ```
 6. Click **Save**
 
-**Why:** Forces Vercel to activate pnpm 9.12.3 before installing dependencies.
+**Why:** Forces Vercel to activate pnpm 10.18.3 before installing dependencies.
 
 ### Step 4: Set Build Command (Optional)
 
@@ -77,10 +71,10 @@ You MUST configure these in the Vercel Dashboard - they cannot be set in code:
 1. Still in **General** settings
 2. Scroll to **Node.js Version**
 3. Click the dropdown
-4. Select: **18.x**
+4. Select: **22.x**
 5. Auto-saves when you select
 
-**Why:** Forces Vercel to use Node 18 instead of Node 22.
+**Why:** Forces Vercel to use Node 22.x (latest stable version).
 
 ### Step 6: Add Environment Variable
 
@@ -119,9 +113,9 @@ After redeployment starts, check the build logs:
 
 **At the start of logs:**
 ```
-Running "install" command: corepack enable && corepack prepare pnpm@9.12.3 --activate && pnpm install
-Node.js v18.x.x
-pnpm 9.12.3
+Running "install" command: corepack enable && corepack prepare pnpm@10.18.3 --activate && pnpm install
+Node.js v22.x.x
+pnpm 10.18.3
 ```
 
 **During install:**
@@ -139,16 +133,16 @@ Build Completed
 ### ❌ If You Still See Errors:
 
 **Node version is wrong:**
-- Verify you selected **18.x** in Node.js Version dropdown
+- Verify you selected **22.x** in Node.js Version dropdown
 - Try redeploying again
 
 **pnpm version is wrong:**
-- Verify install command is exactly: `corepack enable && corepack prepare pnpm@9.12.3 --activate && pnpm install`
+- Verify install command is exactly: `corepack enable && corepack prepare pnpm@10.18.3 --activate && pnpm install`
 - Check for typos
 - Make sure Override toggle is ON
 
 **Lockfile warnings:**
-- Verify `pnpm-lock.yaml` was generated with pnpm 9.12.3 locally
+- Verify `pnpm-lock.yaml` was generated with pnpm 10.18.3 locally
 - Run `pnpm install` locally one more time
 - Commit and push the updated lockfile
 - Redeploy
@@ -178,7 +172,7 @@ After successful deployment:
 
 ### "Command not found: corepack"
 - This shouldn't happen on Vercel's Node 18+
-- If it does, use alternative install command: `npm i -g pnpm@9.12.3 && pnpm install`
+- If it does, use alternative install command: `npm i -g pnpm@10.18.3 && pnpm install`
 
 ### Build succeeds but pages 404
 - Check that Root Directory is set to `apps/web`
@@ -191,24 +185,24 @@ After successful deployment:
 
 ---
 
-## 📝 Why Node 18 Instead of Node 22?
+## 📝 Why Node 22 + pnpm 10?
 
-**Question:** "Is Node 22 better since it's newer?"
+**Question:** "Why upgrade to Node 22?"
 
-**Answer:** For this project, **Node 18 is the right choice** because:
+**Answer:** The project has been upgraded to **Node 22.x + pnpm 10.18.3** for:
 
-1. **LTS Status:** Node 18 is the current Long Term Support version
-2. **Stability:** Node 22 is still relatively new and may have compatibility issues
-3. **Package Compatibility:** Your dependencies (Next.js 14.2.10, Prisma 5.22.0) are tested with Node 18
-4. **pnpm Compatibility:** The specific pnpm 6.35.1 + Node 22 combination has the fetch bug you're seeing
-5. **Consistency:** Your lockfile was generated with Node 18 + pnpm 9.12.3
+1. **Latest Features:** Node 22 is the newest stable release with performance improvements
+2. **Modern Ecosystem:** pnpm 10 is the latest stable version with better workspace support
+3. **Future-Ready:** Staying current with the ecosystem prevents technical debt
+4. **Compatibility:** All dependencies (Next.js 14.2.10, Prisma 5.22.0) work with Node 22
+5. **Build Success:** Local builds pass with Node 22.13.1 + pnpm 10.18.3
 
-**Using Node 22 causes:**
-- Lockfile incompatibility warnings
-- `ERR_INVALID_THIS` fetch errors
-- Unpredictable build failures
-
-**Stick with Node 18** until you're ready to upgrade the entire stack together.
+**What changed:**
+- Upgraded from Node 18.x → Node 22.x
+- Upgraded from pnpm 9.12.3 → pnpm 10.18.3
+- Regenerated lockfile with new versions
+- Build tested and verified locally
+- Documentation updated to reflect new versions
 
 ---
 
@@ -219,10 +213,10 @@ Before considering Vercel setup complete:
 - [ ] Root Directory set to `apps/web`
 - [ ] Install Command overridden with corepack command
 - [ ] Build Command set to `pnpm build`
-- [ ] Node.js Version set to 18.x
+- [ ] Node.js Version set to 22.x
 - [ ] Environment variable `DECK_PASS` added
 - [ ] Fresh deployment triggered with cache cleared
-- [ ] Build logs show Node 18.x and pnpm 9.12.3
+- [ ] Build logs show Node 22.x and pnpm 10.18.3
 - [ ] No lockfile warnings in logs
 - [ ] Build completes successfully
 - [ ] Site redirects from root to `/invite/demo`
