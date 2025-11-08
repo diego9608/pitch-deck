@@ -1,0 +1,269 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// User model
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  ownedWorkspaces Workspace[]
+  workspaceMembers WorkspaceMember[]
+}
+
+// Workspace model (tenant)
+model Workspace {
+  id        String   @id @default(cuid())
+  slug      String   @unique
+  name      String
+  ownerId   String
+  themeId   String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  owner    User     @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  theme    Theme?   @relation(fields: [themeId], references: [id])
+  members  WorkspaceMember[]
+  projects Project[]
+  events   Event[]
+
+  @@index([slug])
+  @@index([ownerId])
+}
+
+enum WorkspaceRole {
+  OWNER
+  ADMIN
+  EDITOR
+  VIEWER
+}
+
+model WorkspaceMember {
+  id          String        @id @default(cuid())
+  workspaceId String
+  userId      String
+  role        WorkspaceRole @default(VIEWER)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([workspaceId, userId])
+  @@index([workspaceId])
+  @@index([userId])
+}
+
+// Project model
+model Project {
+  id          String   @id @default(cuid())
+  workspaceId String
+  slug        String
+  name        String
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  workspace Workspace  @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  decks     Deck[]
+  resources Resource[]
+  events    Event[]
+
+  @@unique([workspaceId, slug])
+  @@index([workspaceId])
+}
+
+enum DeckVisibility {
+  PRIVATE
+  INVITE_ONLY
+}
+
+enum DeckStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+// Deck model
+model Deck {
+  id         String         @id @default(cuid())
+  projectId  String
+  title      String
+  status     DeckStatus     @default(DRAFT)
+  themeId    String?
+  visibility DeckVisibility @default(PRIVATE)
+  createdAt  DateTime       @default(now())
+  updatedAt  DateTime       @updatedAt
+
+  project  Project       @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  theme    Theme?        @relation(fields: [themeId], references: [id])
+  slides   Slide[]
+  invites  Invite[]
+  sessions DeckSession[]
+  events   Event[]
+
+  @@index([projectId])
+}
+
+// Slide model
+model Slide {
+  id        String   @id @default(cuid())
+  deckId    String
+  index     Int
+  title     String
+  content   String   @db.Text
+  assets    Json?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  deck Deck @relation(fields: [deckId], references: [id], onDelete: Cascade)
+
+  @@unique([deckId, index])
+  @@index([deckId])
+}
+
+enum ResourceType {
+  EXEC_SUMMARY
+  MEMO
+  USE_OF_FUNDS
+  ROADMAP
+  COMPLIANCE
+}
+
+// Resource model (documents)
+model Resource {
+  id        String       @id @default(cuid())
+  projectId String
+  type      ResourceType
+  contentMD String       @db.Text
+  version   String       @default("1.0")
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([projectId])
+}
+
+enum TemplateKind {
+  DECK
+  DOC
+}
+
+// Template model
+model Template {
+  id        String       @id @default(cuid())
+  kind      TemplateKind
+  name      String
+  payload   Json
+  version   String       @default("1.0")
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+}
+
+enum ThemeScope {
+  GLOBAL
+  WORKSPACE
+  PROJECT
+}
+
+// Theme model
+model Theme {
+  id         String     @id @default(cuid())
+  name       String
+  tokens     Json
+  scope      ThemeScope @default(GLOBAL)
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
+
+  workspaces Workspace[]
+  decks      Deck[]
+}
+
+// Invite model
+model Invite {
+  id             String    @id @default(cuid())
+  deckId         String
+  code           String    @unique
+  expiresAt      DateTime?
+  gateHashSha256 String
+  isActive       Boolean   @default(true)
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  deck     Deck          @relation(fields: [deckId], references: [id], onDelete: Cascade)
+  sessions DeckSession[]
+
+  @@index([code])
+  @@index([deckId])
+}
+
+// DeckSession model
+model DeckSession {
+  id           String    @id @default(cuid())
+  inviteId     String
+  ndaAccepted  Boolean   @default(false)
+  consentAt    DateTime?
+  ip           String?
+  userAgent    String?   @db.Text
+  emailHash    String?
+  name         String?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  invite Invite  @relation(fields: [inviteId], references: [id], onDelete: Cascade)
+  deck   Deck    @relation(fields: [deckId], references: [id], onDelete: Cascade)
+  deckId String
+  events Event[]
+
+  @@index([inviteId])
+  @@index([deckId])
+}
+
+// NDAVersion model
+model NDAVersion {
+  id          String   @id @default(cuid())
+  hash        String   @unique
+  contentMD   String   @db.Text
+  version     String
+  effectiveAt DateTime
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([hash])
+}
+
+// Event model (analytics)
+model Event {
+  id          String   @id @default(cuid())
+  workspaceId String?
+  projectId   String?
+  deckId      String?
+  sessionId   String?
+  name        String
+  payload     Json?
+  timestamp   DateTime @default(now())
+
+  workspace Workspace?   @relation(fields: [workspaceId], references: [id], onDelete: SetNull)
+  project   Project?     @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  deck      Deck?        @relation(fields: [deckId], references: [id], onDelete: SetNull)
+  session   DeckSession? @relation(fields: [sessionId], references: [id], onDelete: SetNull)
+
+  @@index([workspaceId])
+  @@index([projectId])
+  @@index([deckId])
+  @@index([sessionId])
+  @@index([name])
+  @@index([timestamp])
+}
