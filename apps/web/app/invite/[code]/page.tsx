@@ -1,142 +1,46 @@
-'use client';
-
-import { useState } from 'react';
-import { useRouter, useParams } from 'next/navigation';
-import { GlassCard, KeyInput, NdaModal } from '@pd/ui';
-import { trackEvent } from '@pd/analytics';
+"use client";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 
 export default function InvitePage() {
-  const router = useRouter();
-  const params = useParams();
-  const code = params.code as string;
+  const r = useRouter();
+  const [key, setKey] = useState("");
+  const [nda, setNda] = useState(false);
+  const [err, setErr] = useState("");
 
-  const [key, setKey] = useState('');
-  const [ndaAccepted, setNdaAccepted] = useState(false);
-  const [showNdaModal, setShowNdaModal] = useState(false);
-  const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
-
-  // For demo purposes, using placeholder NDA content
-  // In production, this would be loaded from the server
-  const ndaContent = `
-    <h1>Acuerdo de Confidencialidad</h1>
-    <p>Este acuerdo establece los términos bajo los cuales se compartirá información confidencial.</p>
-    <h2>1. Definiciones</h2>
-    <p>Información Confidencial significa toda la información compartida en este pitch deck.</p>
-    <h2>2. Obligaciones</h2>
-    <p>El receptor acuerda mantener la confidencialidad de toda la información compartida.</p>
-    <h2>3. Duración</h2>
-    <p>Este acuerdo tiene una duración de 3 años desde la fecha de aceptación.</p>
-    <h2>4. Ley Aplicable</h2>
-    <p>Este acuerdo se rige por las leyes de México.</p>
-  `;
-
-  const handleSubmit = async () => {
-    setError('');
-
-    if (!key) {
-      setError('Por favor ingrese la clave de acceso');
-      return;
-    }
-
-    if (!ndaAccepted) {
-      setError('Debe aceptar el NDA para continuar');
-      return;
-    }
-
-    setLoading(true);
-
-    try {
-      const response = await fetch('/api/unlock', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          key,
-          consent: {
-            ndaAccepted: true,
-          },
-        }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        setError(data.error || 'Error al validar la clave');
-        setLoading(false);
-        return;
-      }
-
-      // Track successful unlock
-      await trackEvent('unlock_success', { code });
-
-      // Redirect to deck
-      router.push(`/deck/${data.deckId}`);
-    } catch (err) {
-      console.error('Unlock error:', err);
-      setError('Error de conexión. Por favor intente nuevamente.');
-      setLoading(false);
-    }
-  };
+  async function submit() {
+    setErr("");
+    const res = await fetch("/api/unlock", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ key, consent: { ndaAccepted: nda } })
+    });
+    if (res.ok) r.push("/deck/intro");
+    else setErr("Wrong key or NDA not accepted.");
+  }
 
   return (
-    <main className="min-h-screen flex items-center justify-center p-4">
-      <GlassCard className="max-w-md w-full">
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-[var(--color-fg)] mb-2">
-            Acceso Invitado
-          </h1>
-          <p className="text-[var(--color-fg)] opacity-75">
-            Ingrese su clave de acceso para ver el pitch deck
-          </p>
-        </div>
-
-        <KeyInput
-          value={key}
-          onChange={setKey}
-          onSubmit={handleSubmit}
-          disabled={loading}
-          error={error}
-        />
-
-        <div className="mt-6">
-          <label className="flex items-start gap-3 cursor-pointer group">
-            <input
-              type="checkbox"
-              checked={ndaAccepted}
-              onChange={(e) => setNdaAccepted(e.target.checked)}
-              disabled={loading}
-              className="mt-1 w-5 h-5 rounded border-[var(--color-border)] bg-[var(--color-bg)] text-[var(--color-primary)] focus:ring-2 focus:ring-[var(--color-accent)] focus:ring-offset-2 focus:ring-offset-[var(--color-glass-bg)] cursor-pointer"
-              aria-label="Acepto el NDA"
-            />
-            <span className="text-sm text-[var(--color-fg)] flex-1">
-              Acepto el{' '}
-              <button
-                onClick={() => setShowNdaModal(true)}
-                className="text-[var(--color-accent)] underline hover:text-[var(--color-primary)] transition-colors focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)] focus:ring-offset-2 focus:ring-offset-[var(--color-glass-bg)] rounded"
-                type="button"
-              >
-                Acuerdo de Confidencialidad (NDA)
-              </button>
-            </span>
+    <main className="min-h-dvh relative bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-slate-900 via-slate-950 to-black">
+      <div className="absolute inset-0 backdrop-blur-xl" />
+      <div className="relative z-10 flex items-center justify-center min-h-dvh p-6">
+        <div className="w-[420px] rounded-2xl border border-white/10 bg-white/5 p-6 shadow-2xl">
+          <h1 className="text-xl font-semibold text-white mb-4">Enter access key</h1>
+          <input
+            value={key}
+            onChange={(e)=>setKey(e.target.value)}
+            placeholder="••••••••"
+            className="w-full rounded-md bg-black/50 border border-white/10 text-white px-3 py-2 outline-none"
+          />
+          <label className="flex items-center gap-2 text-sm text-white/80 mt-4">
+            <input type="checkbox" className="accent-sky-400" checked={nda} onChange={e=>setNda(e.target.checked)}/>
+            I accept the NDA
           </label>
+          {err && <p className="text-red-400 text-sm mt-2">{err}</p>}
+          <button onClick={submit} className="mt-4 w-full rounded-md bg-sky-500/90 hover:bg-sky-500 text-white py-2 font-medium">
+            Continue
+          </button>
         </div>
-
-        <button
-          onClick={handleSubmit}
-          disabled={loading || !key || !ndaAccepted}
-          className="w-full mt-8 bg-[var(--color-primary)] hover:bg-[var(--color-secondary)] text-white font-semibold py-3 px-6 rounded-[var(--radius-lg)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)] focus:ring-offset-2 focus:ring-offset-[var(--color-glass-bg)] min-h-[44px]"
-        >
-          {loading ? 'Validando...' : 'Acceder'}
-        </button>
-      </GlassCard>
-
-      <NdaModal
-        isOpen={showNdaModal}
-        onClose={() => setShowNdaModal(false)}
-        content={ndaContent}
-      />
+      </div>
     </main>
   );
 }

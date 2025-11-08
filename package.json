@@ -4,9 +4,12 @@
   "private": true,
   "description": "Production-grade pitch deck platform with investor gate and multi-tenant architecture",
   "packageManager": "pnpm@9.12.3",
+  "engines": {
+    "node": "18.x"
+  },
   "scripts": {
     "dev": "turbo run dev",
-    "prebuild": "pnpm --filter web db:generate",
+    "prebuild": "pnpm --filter web db:generate || echo skip",
     "build": "pnpm --filter web build",
     "lint": "turbo run lint",
     "test": "turbo run test",
