@@ -4,40 +4,5 @@
   command = "pnpm build"
   publish = "apps/web/.next"
 
-[build.environment]
-  NODE_VERSION = "18"
-
-# Next.js plugin handles routing automatically
 [[plugins]]
   package = "@netlify/plugin-nextjs"
-
-# Function bundling configuration for pnpm monorepo
-[functions]
-  node_bundler = "nft"
-  external_node_modules = ["next", "react", "react-dom"]
-  included_files = [
-    "apps/web/.next/**",
-    "apps/web/package.json",
-    "apps/web/node_modules/next/**"
-  ]
-
-# Headers for security
-[[headers]]
-  for = "/*"
-  [headers.values]
-    X-Frame-Options = "DENY"
-    X-Content-Type-Options = "nosniff"
-    X-XSS-Protection = "1; mode=block"
-    Referrer-Policy = "strict-origin-when-cross-origin"
-    Permissions-Policy = "geolocation=(), microphone=(), camera=()"
-
-# Cache headers for static assets
-[[headers]]
-  for = "/_next/static/*"
-  [headers.values]
-    Cache-Control = "public, max-age=31536000, immutable"
-
-[[headers]]
-  for = "/images/*"
-  [headers.values]
-    Cache-Control = "public, max-age=31536000, immutable"
