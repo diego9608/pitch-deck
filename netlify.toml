@@ -1,8 +1,9 @@
-# Netlify configuration for pitch-deck platform
-
 [build]
   command = "pnpm build"
   publish = "apps/web/.next"
+
+[build.environment]
+  NODE_VERSION = "18"
 
 [[plugins]]
   package = "@netlify/plugin-nextjs"
