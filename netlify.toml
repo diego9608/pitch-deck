@@ -1,7 +1,7 @@
 # Netlify configuration for pitch-deck platform
 
 [build]
-  command = "npm install -g pnpm@10.18.3 && pnpm install && pnpm build"
+  command = "pnpm build"
   publish = "apps/web/.next"
 
 [build.environment]
